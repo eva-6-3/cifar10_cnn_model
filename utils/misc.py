@@ -38,3 +38,59 @@ def show_random_images(data_loader):
 def show_model_summary(model, input_size=(1, 28, 28)):
     summary(model, input_size=input_size)
 
+
+def get_wrong_predictions(model, test_loader):
+    model.eval()
+    test_loss = 0
+    correct = 0
+
+    wrong_correct = []
+    wrong_predicted = []
+    wrong_image_data = []
+
+    with torch.no_grad():
+        for data, target in test_loader:
+            data, target = data.to(device), target.to(device)
+            output = model(data)
+            # test_loss += F.nll_loss(output, target, reduction='sum').item()  # sum up batch loss
+            pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+            status = pred.eq(target.view_as(pred))
+            # correct += status.sum().item()
+
+            mistakes, _ = torch.where(status==False)
+            if len(mistakes):
+                m_data = data[mistakes]
+                m_target = target[mistakes]
+                m_output = output[mistakes]
+                m_pred = pred[mistakes]
+                correct = [x.item() for x in m_target.cpu().detach()]
+                predicted = [x.item() for x in m_pred.cpu().detach()]
+                image_data = [x for x in m_data.cpu().detach()]
+
+                wrong_correct.extend(correct)
+                wrong_predicted.extend(predicted)
+                wrong_image_data.extend(image_data)
+    
+    return wrong_correct, wrong_predicted, wrong_image_data
+
+
+def show_grid(img):
+    npimg = img.numpy()
+    plt.imshow(np.transpose(npimg, (1,2,0)), interpolation='nearest')
+
+
+def show_wrong_images(targets, predicts, images, size=20, grid=(5, 4)):
+    img_data_temp = []
+    wps = []
+    for n, (wc, wp, wi) in enumerate(zip(targets, predicts, images)):
+        wps.append(wp)
+        img_data_temp.append(wi)
+        if n>18:
+            break
+    
+    wrong_images_temp = torch.stack(img_data_temp)
+    print()
+    print(f"Mistakenly predicted as {wps}")
+
+    grid_img = torchvision.utils.make_grid(wrong_images_temp, nrow=grid[0])
+    show_grid(grid_img)
