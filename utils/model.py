@@ -2,6 +2,30 @@ import torch.nn.functional as F
 import torch.nn as nn
 
 
+class SeparableConv2d(nn.Module):
+    def __init__(
+        self,
+        in_channels, out_channels, 
+        kernel_size=1, stride=1, 
+        padding=0, dilation=1, 
+        bias=False
+    ):
+        super(SeparableConv2d,self).__init__()
+
+        self.conv1 = nn.Conv2d(
+            in_channels, in_channels, 
+            kernel_size, stride, padding, dilation, groups=in_channels, bias=bias
+        )
+        self.pointwise = nn.Conv2d(
+            in_channels, out_channels, 1, 1, 0, 1, 1, bias=bias)
+    
+    def forward(self,x):
+        x = self.conv1(x)
+        x = self.pointwise(x)
+        x = F.relu(x)
+        return x
+
+
 class Net(nn.Module):
     def __init__(
         self,
@@ -18,35 +42,33 @@ class Net(nn.Module):
         self.GN_groups = GN_groups
         self.dropout_value = dropout_value
         
-        
-        # C1C2C3C40
         # C1 BLOCK
         self.convblock_1 = self.build_conv_block(3, 32)
         self.convblock_2 = self.build_conv_block(32, 64)
+        self.dilated_conv_1 = nn.Sequential(
+            nn.Conv2d(64, 32, 1, stride=2, padding=1, dilation=2),
+            nn.ReLU()
+        )
+        
+        # C2 BLOCK
+        self.convblock_3 = self.build_conv_block(32, 64)
+        self.convblock_4 = self.build_conv_block(64, 64)
+        self.dilated_conv_2 = nn.Sequential(
+            nn.Conv2d(64, 32, 1, stride=2, padding=0, dilation=2),
+            nn.ReLU()
+        )
+        
+        # C3 BLOCK
+        self.sep_conv_1 = SeparableConv2d(32, 32)
+        self.sep_conv_2 = SeparableConv2d(32, 64)
         self.strided_conv_1 = nn.Sequential(
             nn.Conv2d(64, 32, 1, stride=2, padding=1),
             nn.ReLU()
         )
         
-        # C2 BLOCK
-        self.convblock_3 = self.build_conv_block(32, 32)
-        self.convblock_4 = self.build_conv_block(32, 64)
-        self.strided_conv_2 = nn.Sequential(
-            nn.Conv2d(64, 32, 1, stride=2, padding=0),
-            nn.ReLU()
-        )
-        
-        # C3 BLOCK
-        self.convblock_5 = self.build_conv_block(32, 32)
-        self.convblock_6 = self.build_conv_block(32, 64)
-        self.strided_conv_3 = nn.Sequential(
-            nn.Conv2d(64, 32, 1, stride=2, padding=1),
-            nn.ReLU()
-        )
-        
         # C4 BLOCK
-        self.convblock_7 = self.build_conv_block(32, 32)
-        self.convblock_8 = self.build_conv_block(32, 10)
+        self.convblock_5 = self.build_conv_block(32, 32)
+        self.convblock_6 = self.build_conv_block(32, 10)
         
         # OUTPUT BLOCK
         self.gap = nn.Sequential(
@@ -86,18 +108,18 @@ class Net(nn.Module):
     def forward(self, x):
         x = self.convblock_1(x)
         x = self.convblock_2(x)
-        x = self.strided_conv_1(x)
+        x = self.dilated_conv_1(x)
 
         x = self.convblock_3(x)
         x = self.convblock_4(x)
-        x = self.strided_conv_2(x)
+        x = self.dilated_conv_2(x)
+        
+        x = self.sep_conv_1(x)
+        x = self.sep_conv_2(x)
+        x = self.strided_conv_1(x)
         
         x = self.convblock_5(x)
         x = self.convblock_6(x)
-        x = self.strided_conv_3(x)
-        
-        x = self.convblock_7(x)
-        x = self.convblock_8(x)
 
         x = self.gap(x)
         x = x.view(-1, 10)
