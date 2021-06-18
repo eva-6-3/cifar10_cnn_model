@@ -49,6 +49,8 @@ We have not used any Dense Layer, Instead we targeted GAP to get the output clas
         x = self.gap(x)
         x = x.view(-1, 10)
 ```
+<img src="https://github.com/askmuhsin/cifar10_cnn_model/blob/main/resources/model_params.png" alt="model_params" width="400"/>
+
 
 # Augmentation
 ```python
@@ -73,9 +75,13 @@ We have not used any Dense Layer, Instead we targeted GAP to get the output clas
             ToTensorV2()
         ])
 ```
+<img src="https://github.com/askmuhsin/cifar10_cnn_model/blob/main/resources/img_augmetation_with_normalization.png" alt="img_augmetation_with_normalization" width="400"/>
+
 
 # Training
-
+<img src="https://github.com/askmuhsin/cifar10_cnn_model/blob/main/resources/LOSS_GRAPH.png" alt="LOSS_GRAPH" width="400"/>
+<img src="https://github.com/askmuhsin/cifar10_cnn_model/blob/main/resources/ACC_GRAPH.png" alt="ACC_GRAPH" width="400"/>
+<img src="https://github.com/askmuhsin/cifar10_cnn_model/blob/main/resources/misclassified_images.png" alt="misclassified_images" width="400"/>
 
 
 # Goals 
