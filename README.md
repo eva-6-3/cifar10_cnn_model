@@ -31,10 +31,10 @@ The classes on CIFAR-10 are Airplane, Automobile, Bird, Cat, Deer, Dog, Frog, Ho
 - [X] one of the layers must use Depthwise Separable Convolution. _(Bonus points for two layers)_
 - [X] one of the layers must use Dilated Convolution
 - [X] use GAP (compulsory):- add FC after GAP to target #of classes (optional) _(if optional achieved Bonus points)_
-- [ ] use albumentation library and apply:
-  - [ ] horizontal flip
-  - [ ] shiftScaleRotate
-  - [ ] coarseDropout (max_holes = 1, max_height=16px, max_width=1, min_holes = 1, min_height=16px, min_width=16px, fill_value=(mean of your dataset), mask_fill_value = None)
-  - [ ] grayscale _(For Bonus points)_
+- [X] use albumentation library and apply:
+  - [X] horizontal flip
+  - [X] shiftScaleRotate
+  - [x] coarseDropout (max_holes = 1, max_height=16px, max_width=1, min_holes = 1, min_height=16px, min_width=16px, fill_value=(mean of your dataset), mask_fill_value = None)
+  - [X] grayscale _(For Bonus points)_
 - [ ] achieve 85% accuracy, as many epochs as you want. Total Params to be less than 200k.  _(Bonus for 87% acc, and <100k params)_
 - [ ] upload to Github
