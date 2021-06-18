@@ -28,8 +28,8 @@ The classes on CIFAR-10 are Airplane, Automobile, Bird, Cat, Deer, Dog, Frog, Ho
 - [X] Model is trained on GPU
 - [X] change the architecture to C1C2C3C40  (No MaxPooling, but 3 3x3 layers with stride of 2 instead) (If you can figure out how to use Dilated kernels here instead of MP or strided convolution, then 200pts extra!)
 - [ ] total RF must be more than 44. _(Bonux points if RF > 52)_
-- [ ] one of the layers must use Depthwise Separable Convolution. _(Bonus points for two layers)_
-- [ ] one of the layers must use Dilated Convolution
+- [X] one of the layers must use Depthwise Separable Convolution. _(Bonus points for two layers)_
+- [X] one of the layers must use Dilated Convolution
 - [X] use GAP (compulsory):- add FC after GAP to target #of classes (optional) _(if optional achieved Bonus points)_
 - [ ] use albumentation library and apply:
   - [ ] horizontal flip
