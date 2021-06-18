@@ -1,5 +1,8 @@
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
+import albumentations as A
+from albumentations.pytorch import ToTensorV2
+import numpy as np
 
 
 class CIFAR10_dataset():
@@ -15,8 +18,7 @@ class CIFAR10_dataset():
     def __init__(
         self,
         train, cuda,
-        root='./data',
-        normalized=True
+        root='./data'
     ):
         self.train = train
         self.cuda = cuda
@@ -25,19 +27,35 @@ class CIFAR10_dataset():
         self.mean = (0.491, 0.482, 0.447)
         self.std = (0.247, 0.243, 0.262)
         
-        if normalized:
-            self.train_transforms = transforms.Compose([
-                transforms.ToTensor(),
-                transforms.Normalize(self.mean, self.std)
-            ])
-        else:
-            self.train_transforms = transforms.Compose([
-                transforms.ToTensor()
-            ])
-        self.test_transforms = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize(self.mean, self.std)
+        self.train_transforms = A.Compose([
+            A.HorizontalFlip(p=0.5),
+            A.ShiftScaleRotate(
+               shift_limit=0.0625, scale_limit=0.1, 
+                rotate_limit=45, interpolation=1, 
+                border_mode=4, p=0.5
+            ),
+            A.CoarseDropout(
+                max_holes=2, max_height=8, 
+                max_width=8, p=0.3
+            ),
+            A.RandomBrightnessContrast(p=0.2),
+            A.ToGray(p=0.1),
+            A.Normalize(
+                mean=self.mean, 
+                std=self.std,
+                always_apply=True
+            ),
+            ToTensorV2()
         ])
+        self.test_transforms = A.Compose([
+            A.Normalize(
+                mean=self.mean, 
+                std=self.std,
+                always_apply=True
+            ),
+            ToTensorV2()
+        ])
+        
         if self.train:
             self.transforms = self.train_transforms
         else:
@@ -51,7 +69,7 @@ class CIFAR10_dataset():
         data = datasets.CIFAR10(
             self.root,
             train=self.train,
-            transform=self.transforms,
+            transform=lambda img:self.transforms(image=np.array(img))["image"],
             download=True
         )
         self.classes = data.classes
