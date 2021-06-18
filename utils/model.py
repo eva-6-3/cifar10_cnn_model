@@ -18,33 +18,46 @@ class Net(nn.Module):
         self.GN_groups = GN_groups
         self.dropout_value = dropout_value
         
-        self.convblock1 = self.build_conv_block(1, 6)
-        self.convblock2 = self.build_conv_block(6, 12)
-
-        # TRANSITION BLOCK 1
-        self.convblock3 = nn.Sequential(
-            nn.Conv2d(in_channels=12, out_channels=7, kernel_size=(1, 1), padding=0, bias=False),
+        
+        # C1C2C3C40
+        # C1 BLOCK
+        self.convblock_1 = self.build_conv_block(3, 32)
+        self.convblock_2 = self.build_conv_block(32, 64)
+        self.strided_conv_1 = nn.Sequential(
+            nn.Conv2d(64, 32, 1, stride=2, padding=1),
+            nn.ReLU()
         )
-        self.pool1 = nn.MaxPool2d(2, 2)
-
-        self.convblock4 = self.build_conv_block(7, 16)
-        self.convblock5 = self.build_conv_block(16, 16)
-        self.convblock6 = self.build_conv_block(16, 18)
-        self.convblock7 = self.build_conv_block(18, 18, padding=1)
+        
+        # C2 BLOCK
+        self.convblock_3 = self.build_conv_block(32, 32)
+        self.convblock_4 = self.build_conv_block(32, 64)
+        self.strided_conv_2 = nn.Sequential(
+            nn.Conv2d(64, 32, 1, stride=2, padding=0),
+            nn.ReLU()
+        )
+        
+        # C3 BLOCK
+        self.convblock_5 = self.build_conv_block(32, 32)
+        self.convblock_6 = self.build_conv_block(32, 64)
+        self.strided_conv_3 = nn.Sequential(
+            nn.Conv2d(64, 32, 1, stride=2, padding=1),
+            nn.ReLU()
+        )
+        
+        # C4 BLOCK
+        self.convblock_7 = self.build_conv_block(32, 32)
+        self.convblock_8 = self.build_conv_block(32, 10)
         
         # OUTPUT BLOCK
         self.gap = nn.Sequential(
             nn.AvgPool2d(kernel_size=6)
-        )
-        self.convblock8 = nn.Sequential(
-            nn.Conv2d(in_channels=18, out_channels=10, kernel_size=(1, 1), padding=0, bias=False)
         )
     
     def build_conv_block(
         self,
         in_channel, out_channel,
         kernel_size=(3, 3),
-        padding=0,
+        padding=1,
     ):
         elements = []
         conv_layer = nn.Conv2d(
@@ -71,21 +84,24 @@ class Net(nn.Module):
         return nn.Sequential(*elements)
 
     def forward(self, x):
-        x = self.convblock1(x)
-        x = self.convblock2(x)
+        x = self.convblock_1(x)
+        x = self.convblock_2(x)
+        x = self.strided_conv_1(x)
 
-        x = self.convblock3(x)
-        x = self.pool1(x)
-
-        x = self.convblock4(x)
-        x = self.convblock5(x)
-        x = self.convblock6(x)
-        x = self.convblock7(x)
+        x = self.convblock_3(x)
+        x = self.convblock_4(x)
+        x = self.strided_conv_2(x)
+        
+        x = self.convblock_5(x)
+        x = self.convblock_6(x)
+        x = self.strided_conv_3(x)
+        
+        x = self.convblock_7(x)
+        x = self.convblock_8(x)
 
         x = self.gap(x)
-        x = self.convblock8(x)
-
         x = x.view(-1, 10)
+        
         return F.log_softmax(x, dim=-1)
     
 
