@@ -81,7 +81,7 @@ class CIFAR10_dataset():
         dataloader_args = dict(
             shuffle=self.shuffle, 
             batch_size=128, 
-            num_workers=2, 
+            num_workers=4, 
             pin_memory=True
         ) if self.cuda else dict(
             shuffle=self.shuffle, 
