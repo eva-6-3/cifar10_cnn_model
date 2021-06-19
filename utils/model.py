@@ -43,8 +43,9 @@ class Net(nn.Module):
         self.dropout_value = dropout_value
         
         # C1 BLOCK
-        self.convblock_1 = self.build_conv_block(3, 32)
-        self.convblock_2 = self.build_conv_block(32, 64)
+        self.convblock_0 = self.build_conv_block(3, 32)
+        self.convblock_1 = self.build_conv_block(32, 64)
+        self.convblock_2 = self.build_conv_block(64, 64)
         self.dilated_conv_1 = nn.Sequential(
             nn.Conv2d(64, 32, 1, stride=2, padding=1, dilation=2),
             nn.ReLU()
@@ -52,23 +53,23 @@ class Net(nn.Module):
         
         # C2 BLOCK
         self.convblock_3 = self.build_conv_block(32, 64)
-        self.convblock_4 = self.build_conv_block(64, 64)
+        self.convblock_4 = self.build_conv_block(64, 128)
         self.dilated_conv_2 = nn.Sequential(
-            nn.Conv2d(64, 32, 1, stride=2, padding=0, dilation=2),
+            nn.Conv2d(128, 64, 1, stride=2, padding=0, dilation=2),
             nn.ReLU()
         )
         
         # C3 BLOCK
-        self.sep_conv_1 = SeparableConv2d(32, 32)
-        self.sep_conv_2 = SeparableConv2d(32, 64)
+        self.sep_conv_1 = SeparableConv2d(64, 64)
+        self.sep_conv_2 = SeparableConv2d(64, 128)
         self.strided_conv_1 = nn.Sequential(
-            nn.Conv2d(64, 32, 1, stride=2, padding=1),
+            nn.Conv2d(128, 64, 1, stride=2, padding=1),
             nn.ReLU()
         )
         
         # C4 BLOCK
-        self.convblock_5 = self.build_conv_block(32, 32)
-        self.convblock_6 = self.build_conv_block(32, 10)
+        self.convblock_5 = self.build_conv_block(64, 16)
+        self.convblock_6 = self.build_conv_block(16, 10)
         
         # OUTPUT BLOCK
         self.gap = nn.Sequential(
@@ -106,6 +107,7 @@ class Net(nn.Module):
         return nn.Sequential(*elements)
 
     def forward(self, x):
+        x = self.convblock_0(x)
         x = self.convblock_1(x)
         x = self.convblock_2(x)
         x = self.dilated_conv_1(x)
@@ -125,6 +127,3 @@ class Net(nn.Module):
         x = x.view(-1, 10)
         
         return F.log_softmax(x, dim=-1)
-    
-
-
