@@ -1,0 +1,14 @@
+2021-06-20 23:39:58,492 INFO    MainThread:11184 [wandb_setup.py:_flush():70] setting env: {}
+2021-06-20 23:39:58,492 INFO    MainThread:11184 [wandb_setup.py:_flush():70] multiprocessing start_methods=fork,spawn,forkserver
+2021-06-20 23:39:58,492 INFO    MainThread:11184 [wandb_setup.py:_flush():70] setting login settings: {}
+2021-06-20 23:39:58,492 INFO    MainThread:11184 [wandb_setup.py:_flush():70] configuring jupyter hooks <wandb.sdk.wandb_init._WandbInit object at 0x7f93b68f62b0>
+2021-06-20 23:39:58,492 INFO    MainThread:11184 [wandb_init.py:_log_setup():303] Logging user logs to /data/omnibox1/muhsin/OOB_experiments/eva/cifar10_cnn_model/training_nbs/wandb/run-20210620_233958-ltcrsoyx/logs/debug.log
+2021-06-20 23:39:58,492 INFO    MainThread:11184 [wandb_init.py:_log_setup():304] Logging internal logs to /data/omnibox1/muhsin/OOB_experiments/eva/cifar10_cnn_model/training_nbs/wandb/run-20210620_233958-ltcrsoyx/logs/debug-internal.log
+2021-06-20 23:40:04,187 INFO    MainThread:11184 [wandb_run.py:_console_start():1218] atexit reg
+2021-06-20 23:40:04,188 INFO    MainThread:11184 [wandb_run.py:_redirect():1085] redirect: SettingsConsole.WRAP
+2021-06-20 23:40:04,188 INFO    MainThread:11184 [wandb_run.py:_redirect():1116] Wrapping output streams.
+2021-06-20 23:40:04,188 INFO    MainThread:11184 [wandb_run.py:_redirect():1132] Redirects installed.
+2021-06-21 00:19:43,336 INFO    MainThread:11184 [wandb_run.py:finish():912] finishing run askmuhsin/cifar_10_lte200k_npool/ltcrsoyx
+2021-06-21 00:19:43,337 INFO    MainThread:11184 [wandb_init.py:_jupyter_teardown():234] cleaning up jupyter logic
+2021-06-21 00:19:43,350 INFO    MainThread:11184 [jupyter.py:save_history():237] saving 29 cells to _session_history.ipynb
+2021-06-21 00:19:43,366 INFO    MainThread:11184 [wandb_run.py:_config_callback():547] config_cb None None {'_wandb': {'cli_version': '0.10.11', 'python_version': '3.6.12', 'is_jupyter_run': True, 'is_kaggle_kernel': False, 'framework': 'torch', 'session_history': 'code/_session_history.ipynb'}}
