@@ -1,7 +1,7 @@
 import torch.nn.functional as F
 import torch.nn as nn
 
-dropout_value = 0.2
+dropout_value = 0.1
 
 class SeparableConv2d(nn.Module):
     def __init__(
@@ -65,18 +65,18 @@ class Net(nn.Module):
         super().__init__()
         
         # C1 BLOCK
-        self.convblock_0 = ConvBNAct(3, 32)
-        self.convblock_1 = ConvBNAct(32, 32)
+        self.convblock_0 = ConvBNAct(3, 16)
+        self.convblock_1 = ConvBNAct(16, 32)
         self.convblock_2 = ConvBNAct(32, 32)
-        self.dilated_conv_1 = ConvBNAct(32, 16, k=3, s=2, dilation=2)
+        self.dilated_conv_1 = ConvBNAct(32, 32, k=3, s=2, dilation=2)
         
         # C2 BLOCK
-        self.convblock_3 = ConvBNAct(16, 32)
-        self.convblock_4 = ConvBNAct(32, 64)
-        self.dilated_conv_2 = ConvBNAct(64, 32, k=3, s=2, dilation=2)
+        self.convblock_3 = ConvBNAct(32, 52)
+        self.convblock_4 = ConvBNAct(52, 64)
+        self.dilated_conv_2 = ConvBNAct(64, 64, k=3, s=2, dilation=2)
         
         # C3 BLOCK
-        self.sep_conv_1 = SeparableConv2d(32, 64)
+        self.sep_conv_1 = SeparableConv2d(64, 64)
         self.convblock_7 = ConvBNAct(64, 64)
         self.strided_conv_1 = ConvBNAct(64, 64, k=1, s=2)
         

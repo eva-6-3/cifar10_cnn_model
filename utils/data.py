@@ -9,7 +9,7 @@ class CIFAR10_dataset():
     """
     a utility class to get data loader for CIFAR10.
     transforms are hardcoded for now.
-    
+
     USAGE:
         train_loader = CIFAR10_dataset(
             train=True, cude=torch.cuda.is_available()
@@ -77,7 +77,7 @@ class CIFAR10_dataset():
             
     def get_loader(self):
         data = self.get_data()
-        
+
         dataloader_args = dict(
             shuffle=self.shuffle, 
             batch_size=128, 
@@ -88,7 +88,8 @@ class CIFAR10_dataset():
             batch_size=64
         )
         data_loader = DataLoader(data, **dataloader_args)
-        print(f"""
-        [INFO] {'train' if self.train else 'test'} dataset of size {len(data)} loaded...
-        """)
+        print(
+            f"""[INFO] {'train' if self.train else 'test'} dataset of size {len(data)} loaded..."""
+        )
         return data_loader
+        
