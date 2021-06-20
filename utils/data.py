@@ -32,11 +32,11 @@ class CIFAR10_dataset():
             A.ShiftScaleRotate(
                shift_limit=0.0625, scale_limit=0.1, 
                 rotate_limit=45, interpolation=1, 
-                border_mode=4, p=0.5
+                border_mode=4, p=0.2
             ),
             A.CoarseDropout(
                 max_holes=2, max_height=8, 
-                max_width=8, p=0.3
+                max_width=8, p=0.1
             ),
             A.RandomBrightnessContrast(p=0.2),
             A.ToGray(p=0.1),
@@ -81,7 +81,7 @@ class CIFAR10_dataset():
         dataloader_args = dict(
             shuffle=self.shuffle, 
             batch_size=128, 
-            num_workers=4, 
+            num_workers=2, 
             pin_memory=True
         ) if self.cuda else dict(
             shuffle=self.shuffle, 
