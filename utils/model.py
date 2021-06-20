@@ -77,8 +77,8 @@ class Net(nn.Module):
         
         # C3 BLOCK
         self.sep_conv_1 = SeparableConv2d(32, 64)
-        self.convblock_7 = ConvBNAct(64, 128)
-        self.strided_conv_1 = ConvBNAct(128, 64, k=1, s=2)
+        self.convblock_7 = ConvBNAct(64, 64)
+        self.strided_conv_1 = ConvBNAct(64, 64, k=1, s=2)
         
         # C4 BLOCK
         self.convblock_5 = ConvBNAct(64, 64)
