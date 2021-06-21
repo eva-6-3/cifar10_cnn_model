@@ -17,6 +17,8 @@ class SeparableConv2d(nn.Module):
                 in_channels, in_channels, 
                 kernel_size, stride, padding, dilation, groups=in_channels, bias=bias
             ),
+            nn.BatchNorm2d(in_channels),
+            nn.ReLU(),
             nn.Conv2d(
                 in_channels, out_channels, 1, 1, 0, 1, 1, bias=bias
             ),
@@ -71,12 +73,12 @@ class Net(nn.Module):
         self.dilated_conv_1 = ConvBNAct(32, 32, k=3, s=2, dilation=2)
         
         # C2 BLOCK
-        self.convblock_3 = ConvBNAct(32, 52)
-        self.convblock_4 = ConvBNAct(52, 64)
-        self.dilated_conv_2 = ConvBNAct(64, 64, k=3, s=2, dilation=2)
+        self.convblock_3 = ConvBNAct(32, 32)
+        self.convblock_4 = ConvBNAct(32, 52)
+        self.dilated_conv_2 = ConvBNAct(52, 64, k=3, s=2, dilation=2)
         
         # C3 BLOCK
-        self.sep_conv_1 = SeparableConv2d(64, 64)
+        self.sep_conv_1 = ConvBNAct(64, 64)
         self.convblock_7 = ConvBNAct(64, 64)
         self.strided_conv_1 = ConvBNAct(64, 64, k=1, s=2)
         
