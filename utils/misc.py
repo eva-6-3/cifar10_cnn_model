@@ -64,7 +64,7 @@ def show_model_summary(model, input_size=(1, 28, 28)):
     summary(model, input_size=input_size)
 
 
-def get_wrong_predictions(model, test_loader):
+def get_wrong_predictions(model, test_loader, device):
     model.eval()
     test_loss = 0
     correct = 0

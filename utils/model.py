@@ -1,6 +1,7 @@
 import torch.nn.functional as F
 import torch.nn as nn
 
+dropout_value = 0.1
 
 class SeparableConv2d(nn.Module):
     def __init__(
@@ -10,102 +11,86 @@ class SeparableConv2d(nn.Module):
         padding=0, dilation=1, 
         bias=False
     ):
-        super(SeparableConv2d, self).__init__()
-
-        self.conv1 = nn.Conv2d(
-            in_channels, in_channels, 
-            kernel_size, stride, padding, dilation, groups=in_channels, bias=bias
+        super().__init__()
+        self.sep_conv = nn.Sequential(
+            nn.Conv2d(
+                in_channels, in_channels, 
+                kernel_size, stride, padding, dilation, groups=in_channels, bias=bias
+            ),
+            nn.BatchNorm2d(in_channels),
+            nn.ReLU(),
+            nn.Conv2d(
+                in_channels, out_channels, 1, 1, 0, 1, 1, bias=bias
+            ),
+            nn.BatchNorm2d(out_channels),
+            nn.ReLU(),
         )
-        self.pointwise = nn.Conv2d(
-            in_channels, out_channels, 1, 1, 0, 1, 1, bias=bias)
     
     def forward(self, x):
-        x = self.conv1(x)
-        x = self.pointwise(x)
-        x = F.relu(x)
+        x = self.sep_conv(x)
+        return x
+
+    
+class ConvBNAct(nn.Module):
+    def __init__(
+        self,
+        in_channels, out_channels,
+        k=3, s=1, p=1, 
+        dilation=1, groups=1, bias=False,
+        dropout_value=dropout_value,
+        regularizers=True,
+    ):
+        super().__init__()
+        layers = []
+        layers.extend([
+            nn.Conv2d(
+                in_channels, out_channels, 
+                k, s, p, 
+                dilation, groups, bias,
+            )
+        ])
+        if regularizers:
+            layers.extend([
+                nn.BatchNorm2d(out_channels),
+                nn.ReLU(),
+                nn.Dropout(dropout_value),
+            ])
+        self.custom_conv = nn.Sequential(*layers)
+    
+    def forward(self, x):
+        x = self.custom_conv(x)
         return x
 
 
 class Net(nn.Module):
-    def __init__(
-        self,
-        dropout_value=0.05,
-        BN=True,
-        LN=False,
-        GN=False, GN_groups=2,
-    ):
+    def __init__(self):
         super().__init__()
-        # Regularizers
-        self.BN = BN
-        self.LN = LN
-        self.GN = GN
-        self.GN_groups = GN_groups
-        self.dropout_value = dropout_value
         
         # C1 BLOCK
-        self.convblock_1 = self.build_conv_block(3, 32)
-        self.convblock_2 = self.build_conv_block(32, 64)
-        self.dilated_conv_1 = nn.Sequential(
-            nn.Conv2d(64, 32, 1, stride=2, padding=1, dilation=2),
-            nn.ReLU()
-        )
+        self.convblock_0 = ConvBNAct(3, 16)
+        self.convblock_1 = ConvBNAct(16, 32)
+        self.convblock_2 = ConvBNAct(32, 32)
+        self.dilated_conv_1 = ConvBNAct(32, 32, k=3, s=2, dilation=2)
         
         # C2 BLOCK
-        self.convblock_3 = self.build_conv_block(32, 64)
-        self.convblock_4 = self.build_conv_block(64, 64)
-        self.dilated_conv_2 = nn.Sequential(
-            nn.Conv2d(64, 32, 1, stride=2, padding=0, dilation=2),
-            nn.ReLU()
-        )
+        self.convblock_3 = ConvBNAct(32, 32)
+        self.convblock_4 = ConvBNAct(32, 52)
+        self.dilated_conv_2 = ConvBNAct(52, 64, k=3, s=2, dilation=2)
         
         # C3 BLOCK
-        self.sep_conv_1 = SeparableConv2d(32, 32)
-        self.sep_conv_2 = SeparableConv2d(32, 64)
-        self.strided_conv_1 = nn.Sequential(
-            nn.Conv2d(64, 32, 1, stride=2, padding=1),
-            nn.ReLU()
-        )
+        self.sep_conv_1 = ConvBNAct(64, 64)
+        self.convblock_7 = ConvBNAct(64, 64)
+        self.strided_conv_1 = ConvBNAct(64, 64, k=1, s=2)
         
         # C4 BLOCK
-        self.convblock_5 = self.build_conv_block(32, 32)
-        self.convblock_6 = self.build_conv_block(32, 10)
+        self.convblock_5 = ConvBNAct(64, 64)
+        self.convblock_6 = ConvBNAct(64, 10, regularizers=False)
         
         # OUTPUT BLOCK
-        self.gap = nn.Sequential(
-            nn.AvgPool2d(kernel_size=6)
-        )
+        self.gap = nn.AvgPool2d(kernel_size=5)
     
-    def build_conv_block(
-        self,
-        in_channel, out_channel,
-        kernel_size=(3, 3),
-        padding=1,
-    ):
-        elements = []
-        conv_layer = nn.Conv2d(
-            in_channels=in_channel, 
-            out_channels=out_channel, 
-            kernel_size=kernel_size, 
-            padding=padding, 
-            bias=False
-        )
-        activation_layer = nn.ReLU()
-        elements.extend([conv_layer, activation_layer])
-        
-        regularizers = []
-        if self.dropout_value:
-            regularizers.append(nn.Dropout(self.dropout_value))
-        if self.BN:
-            regularizers.append(nn.BatchNorm2d(out_channel))
-        if self.LN:
-            regularizers.append(nn.GroupNorm(1, out_channel))
-        if self.GN:
-            regularizers.append(nn.GroupNorm(self.GN_groups, out_channel))
-        elements.extend(regularizers)
-        
-        return nn.Sequential(*elements)
-
     def forward(self, x):
+        x = self.convblock_0(x)
         x = self.convblock_1(x)
         x = self.convblock_2(x)
         x = self.dilated_conv_1(x)
@@ -115,16 +100,13 @@ class Net(nn.Module):
         x = self.dilated_conv_2(x)
         
         x = self.sep_conv_1(x)
-        x = self.sep_conv_2(x)
+        x = self.convblock_7(x)
         x = self.strided_conv_1(x)
         
         x = self.convblock_5(x)
         x = self.convblock_6(x)
 
         x = self.gap(x)
-        x = x.view(-1, 10)
         
+        x = x.view(-1, 10)
         return F.log_softmax(x, dim=-1)
-    
-
-
